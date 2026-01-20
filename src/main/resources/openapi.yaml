@@ -1,0 +1,232 @@
+openapi: 3.0.3
+info:
+  title: Admin Audit Log API
+  description: >
+    API documentation for the Unified Admin Audit system. 
+    Includes endpoints for raw log querying, visualization analytics, and dashboard summaries.
+  version: 1.0.0
+servers:
+  - url: http://localhost:9090
+    description: Local Development Server
+
+tags:
+  - name: Audits
+    description: Core audit log retrieval
+  - name: Analytics
+    description: Chart data and visualizations
+  - name: Summary
+    description: High-level dashboard KPIs
+
+paths:
+  # ----------------------------
+  # Endpoint 1: Unified Query
+  # ----------------------------
+  /api/audits/query:
+    post:
+      summary: Unified Audit Query
+      description: >
+        Fetches audit logs based on Relative time (24H, 7D) or Absolute date ranges. 
+        Acts as the single source of truth for the Audit Grid.
+      tags:
+        - Audits
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditQueryRequest'
+      responses:
+        '200':
+          description: Successful retrieval of audit logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditRecord'
+
+  # ----------------------------
+  # Endpoint 2: Analytics
+  # ----------------------------
+  /api/audits/analytics:
+    post:
+      summary: Audit Analytics (Visualization)
+      description: Returns aggregated data (grouped by client, user, hour) for charts.
+      tags:
+        - Analytics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyticsRequest'
+      responses:
+        '200':
+          description: Aggregated chart data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsResponse'
+
+  # ----------------------------
+  # Endpoint 3: Summary
+  # ----------------------------
+  /api/audits/summary:
+    post:
+      summary: Audit Summary (Dashboard KPIs)
+      description: Provides high-level metrics for dashboard summary cards.
+      tags:
+        - Summary
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummaryRequest'
+      responses:
+        '200':
+          description: Key performance indicators for audits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryResponse'
+
+components:
+  schemas:
+    # --- Request Schemas ---
+    AuditQueryRequest:
+      type: object
+      required:
+        - timeFilterMode
+        - timezone
+      properties:
+        timeFilterMode:
+          type: string
+          enum: [RELATIVE, ABSOLUTE]
+          description: Determines if we use a rolling window or specific dates.
+        timeWindow:
+          type: string
+          example: "24H"
+          description: Required if mode is RELATIVE (e.g., 24H, 7D, 30D).
+        fromDate:
+          type: string
+          format: date-time
+          description: Required if mode is ABSOLUTE.
+        toDate:
+          type: string
+          format: date-time
+          description: Required if mode is ABSOLUTE.
+        actionType:
+          type: string
+          nullable: true
+          example: "SYNC_USERS"
+        clientCode:
+          type: string
+          nullable: true
+          example: "HILTON"
+        timezone:
+          type: string
+          example: "Asia/Kolkata"
+      example:
+        timeFilterMode: "RELATIVE"
+        timeWindow: "24H"
+        timezone: "Asia/Kolkata"
+
+    AnalyticsRequest:
+      type: object
+      required:
+        - timeWindow
+        - timezone
+      properties:
+        timeWindow:
+          type: string
+          example: "7D"
+        actionType:
+          type: string
+          nullable: true
+          example: "SYNC_USERS"
+        timezone:
+          type: string
+          example: "Asia/Kolkata"
+
+    SummaryRequest:
+      type: object
+      properties:
+        timeWindow:
+          type: string
+          example: "30D"
+
+    # --- Response Schemas ---
+    AuditRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        fdsUsername:
+          type: string
+          example: "admin@ideas.com"
+        actionType:
+          type: string
+          example: "SYNC_USERS"
+        clientCode:
+          type: string
+          example: "HILTON"
+        actionTimestamp:
+          type: string
+          format: date-time
+          example: "2025-05-14T16:26:01"
+
+    AnalyticsResponse:
+      type: object
+      properties:
+        byClient:
+          type: array
+          items:
+            type: object
+            properties:
+              clientCode:
+                type: string
+                example: "HILTON"
+              count:
+                type: integer
+                example: 22
+        byUser:
+          type: array
+          items:
+            type: object
+            properties:
+              username:
+                type: string
+                example: "aishwarya@ideas.com"
+              count:
+                type: integer
+                example: 25
+        byHour:
+          type: array
+          items:
+            type: object
+            properties:
+              hour:
+                type: string
+                description: Hour of the day (00-23)
+                example: "06"
+              count:
+                type: integer
+                example: 10
+
+    SummaryResponse:
+      type: object
+      properties:
+        totalActions:
+          type: integer
+          example: 41
+        mostFrequentAction:
+          type: string
+          example: "SYNC_USERS"
+        mostActiveUser:
+          type: string
+          example: "aishwarya@ideas.com"
+        mostImpactedClient:
+          type: string
+          example: "HILTON"

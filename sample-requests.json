@@ -1,0 +1,58 @@
+{
+  "testCases": [
+    {
+      "name": "Query without filters (all logs in range)",
+      "endpoint": "POST /api/audits/query",
+      "payload": {
+        "fromDate": "2025-08-04T00:00:00Z",
+        "toDate": "2026-01-08T23:59:59Z",
+        "actionTypes": [],
+        "clientCodes": [],
+        "usernames": []
+      }
+    },
+    {
+      "name": "Query by specific action types",
+      "endpoint": "POST /api/audits/query",
+      "payload": {
+        "fromDate": "2025-08-04T00:00:00Z",
+        "toDate": "2026-01-08T23:59:59Z",
+        "actionTypes": ["ADD_NEW_CLIENT", "SYNC_USERS"],
+        "clientCodes": [],
+        "usernames": []
+      }
+    },
+    {
+      "name": "Query by client code and username",
+      "endpoint": "POST /api/audits/query",
+      "payload": {
+        "fromDate": "2025-08-04T00:00:00Z",
+        "toDate": "2026-01-08T23:59:59Z",
+        "actionTypes": [],
+        "clientCodes": ["CLI001"],
+        "usernames": ["admin_user"]
+      }
+    },
+    {
+      "name": "Invalid range (400 error expected)",
+      "endpoint": "POST /api/audits/query",
+      "payload": {
+        "fromDate": "2026-01-08T23:59:59Z",
+        "toDate": "2025-08-04T00:00:00Z",
+        "actionTypes": [],
+        "clientCodes": [],
+        "usernames": []
+      }
+    }
+  ],
+  "username analytics": {
+    "clientCode": "HILTON",
+    "fromDate": "2025-08-04T00:00:00Z",
+    "toDate": "2026-01-08T23:59:59Z"
+  },
+  "client analytics" : {
+    "fdsUsername": "Zeeshan.Mujawar@ideas.com",
+    "fromDate": "2025-08-04T00:00:00Z",
+    "toDate": "2026-01-08T23:59:59Z"
+  }
+}
